@@ -1,5 +1,7 @@
 package org.example.workshopjavafxjdbc.gui;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -9,8 +11,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import org.example.workshopjavafxjdbc.application.Main;
 import org.example.workshopjavafxjdbc.model.entities.Department;
+import org.example.workshopjavafxjdbc.model.services.DepartmentService;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class DepartmentListController implements Initializable {
@@ -24,9 +28,26 @@ public class DepartmentListController implements Initializable {
   @FXML
   private Button buttonNew;
 
+  private DepartmentService departmentService;
+  private ObservableList<Department> observableDepartmentList;
+
   @FXML
   public void onButtonNewAction() {
     System.out.println("onButtonNewAction");
+  }
+
+  public void setDepartmentService(DepartmentService departmentService) {
+    this.departmentService = departmentService;
+  }
+
+  public void updateTableView() {
+    if (departmentService == null) {
+      throw new IllegalStateException("DepartmentService is null");
+    }
+
+    List<Department> departmentList = departmentService.findAll();
+    observableDepartmentList = FXCollections.observableArrayList(departmentList);
+    tableViewDepartment.setItems(observableDepartmentList);
   }
 
   @Override
