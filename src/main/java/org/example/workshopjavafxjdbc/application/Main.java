@@ -12,7 +12,7 @@ public class Main extends Application {
 
   @Override
   public void start(Stage primaryStage) throws IOException {
-    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/example/workshopjavafxjdbc/MainView.fxml"));
+    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/example/workshopjavafxjdbc/gui/MainView.fxml"));
     ScrollPane scrollPane = fxmlLoader.load();
     Scene mainScene = new Scene(scrollPane);
 
