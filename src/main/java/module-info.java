@@ -1,6 +1,7 @@
 module org.example.workshopjavafxjdbc {
   requires javafx.controls;
   requires javafx.fxml;
+  requires java.sql;
 
   opens org.example.workshopjavafxjdbc.application to javafx.fxml;
   opens org.example.workshopjavafxjdbc.gui to javafx.fxml;
