@@ -8,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import org.example.workshopjavafxjdbc.database.DataBaseException;
+import org.example.workshopjavafxjdbc.gui.listeners.DataChangeListener;
 import org.example.workshopjavafxjdbc.gui.util.Alerts;
 import org.example.workshopjavafxjdbc.gui.util.Constraints;
 import org.example.workshopjavafxjdbc.gui.util.Utils;
@@ -15,6 +16,8 @@ import org.example.workshopjavafxjdbc.model.entities.Department;
 import org.example.workshopjavafxjdbc.model.services.DepartmentService;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class DepartmentFormController implements Initializable {
@@ -32,6 +35,7 @@ public class DepartmentFormController implements Initializable {
 
   private Department department;
   private DepartmentService departmentService;
+  private List<DataChangeListener> dataChangeListenerList = new ArrayList<>();
 
   @FXML
   public void onButtonSaveAction(ActionEvent event) {
@@ -46,11 +50,13 @@ public class DepartmentFormController implements Initializable {
     try {
       department = getFormData();
       departmentService.saveOrUpdate(department);
+
+      notifyDataChangeListeners();
+
       Utils.currentStage(event).close();
     } catch (DataBaseException e) {
       Alerts.showAlert("Error saving object", null, e.getMessage(), Alert.AlertType.ERROR);
     }
-
   }
 
   @FXML
@@ -75,6 +81,10 @@ public class DepartmentFormController implements Initializable {
     textFieldName.setText(department.getName());
   }
 
+  public void subscribeDataChangeListener(DataChangeListener dataChangeListener) {
+    dataChangeListenerList.add(dataChangeListener);
+  }
+
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
     initializeNodes();
@@ -92,5 +102,11 @@ public class DepartmentFormController implements Initializable {
     department.setName(textFieldName.getText());
 
     return department;
+  }
+
+  private void notifyDataChangeListeners() {
+    for (DataChangeListener dataChangeListener : dataChangeListenerList) {
+      dataChangeListener.onDataChanged();
+    }
   }
 }

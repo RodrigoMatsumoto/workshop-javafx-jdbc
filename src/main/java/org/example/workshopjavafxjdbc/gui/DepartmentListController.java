@@ -16,6 +16,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.workshopjavafxjdbc.application.Main;
+import org.example.workshopjavafxjdbc.gui.listeners.DataChangeListener;
 import org.example.workshopjavafxjdbc.gui.util.Alerts;
 import org.example.workshopjavafxjdbc.gui.util.Utils;
 import org.example.workshopjavafxjdbc.model.entities.Department;
@@ -26,7 +27,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class DepartmentListController implements Initializable {
+public class DepartmentListController implements Initializable, DataChangeListener {
 
   @FXML
   private TableView<Department> tableViewDepartment;
@@ -58,6 +59,7 @@ public class DepartmentListController implements Initializable {
     }
 
     List<Department> departmentList = departmentService.findAll();
+
     observableDepartmentList = FXCollections.observableArrayList(departmentList);
     tableViewDepartment.setItems(observableDepartmentList);
   }
@@ -65,6 +67,11 @@ public class DepartmentListController implements Initializable {
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
     initializeNodes();
+  }
+
+  @Override
+  public void onDataChanged() {
+    updateTableView();
   }
 
   private void initializeNodes() {
@@ -84,6 +91,7 @@ public class DepartmentListController implements Initializable {
 
       departmentFormController.setDepartment(department);
       departmentFormController.setDepartmentService(new DepartmentService());
+      departmentFormController.subscribeDataChangeListener(this);
       departmentFormController.updateFormData();
 
       dialogStage.setTitle("Enter department data");
