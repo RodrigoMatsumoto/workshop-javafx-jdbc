@@ -5,9 +5,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.workshopjavafxjdbc.application.Main;
 import org.example.workshopjavafxjdbc.database.DataBaseException;
@@ -17,6 +21,7 @@ import org.example.workshopjavafxjdbc.gui.util.Utils;
 import org.example.workshopjavafxjdbc.model.entities.Seller;
 import org.example.workshopjavafxjdbc.model.services.SellerService;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -52,7 +57,7 @@ public class SellerListController implements Initializable, DataChangeListener {
     Stage parentStage = Utils.currentStage(event);
     Seller seller = new Seller();
 
-//    createDialogForm(seller, "/org/example/workshopjavafxjdbc/gui/SellerFormView.fxml", parentStage);
+    createDialogForm(seller, "/org/example/workshopjavafxjdbc/gui/SellerFormView.fxml", parentStage);
   }
 
   public void setSellerService(SellerService sellerService) {
@@ -95,28 +100,28 @@ public class SellerListController implements Initializable, DataChangeListener {
     tableViewSeller.prefHeightProperty().bind(stage.heightProperty());
   }
 
-//  private void createDialogForm(Seller seller, String absoluteName, Stage parentStage) {
-//    try {
-//      FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(absoluteName));
-//      Pane pane = fxmlLoader.load();
-//      Stage dialogStage = new Stage();
-//      SellerFormController sellerFormController = fxmlLoader.getController();
-//
-//      sellerFormController.setSeller(seller);
-//      sellerFormController.setSellerService(new SellerService());
-//      sellerFormController.subscribeDataChangeListener(this);
-//      sellerFormController.updateFormData();
-//
-//      dialogStage.setTitle("Enter seller data");
-//      dialogStage.setScene(new Scene(pane));
-//      dialogStage.setResizable(false);
-//      dialogStage.initOwner(parentStage);
-//      dialogStage.initModality(Modality.WINDOW_MODAL);
-//      dialogStage.showAndWait();
-//    } catch (IOException e) {
-//      Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), Alert.AlertType.ERROR);
-//    }
-//  }
+  private void createDialogForm(Seller seller, String absoluteName, Stage parentStage) {
+    try {
+      FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(absoluteName));
+      Pane pane = fxmlLoader.load();
+      Stage dialogStage = new Stage();
+      SellerFormController sellerFormController = fxmlLoader.getController();
+
+      sellerFormController.setSeller(seller);
+      sellerFormController.setSellerService(new SellerService());
+      sellerFormController.subscribeDataChangeListener(this);
+      sellerFormController.updateFormData();
+
+      dialogStage.setTitle("Enter seller data");
+      dialogStage.setScene(new Scene(pane));
+      dialogStage.setResizable(false);
+      dialogStage.initOwner(parentStage);
+      dialogStage.initModality(Modality.WINDOW_MODAL);
+      dialogStage.showAndWait();
+    } catch (IOException e) {
+      Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), Alert.AlertType.ERROR);
+    }
+  }
 
   private void initEditButtons() {
     tableColumnEdit.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
@@ -134,12 +139,12 @@ public class SellerListController implements Initializable, DataChangeListener {
 
         setGraphic(buttonEdit);
 
-//        buttonEdit.setOnAction(
-//          event -> createDialogForm(
-//            seller, "/org/example/workshopjavafxjdbc/gui/SellerFormView.fxml",
-//              Utils.currentStage(event)
-//          )
-//        );
+        buttonEdit.setOnAction(
+          event -> createDialogForm(
+            seller, "/org/example/workshopjavafxjdbc/gui/SellerFormView.fxml",
+              Utils.currentStage(event)
+          )
+        );
       }
     });
   }
