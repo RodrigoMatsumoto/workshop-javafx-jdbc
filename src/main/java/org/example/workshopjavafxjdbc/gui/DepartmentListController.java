@@ -107,13 +107,14 @@ public class DepartmentListController implements Initializable, DataChangeListen
       dialogStage.initModality(Modality.WINDOW_MODAL);
       dialogStage.showAndWait();
     } catch (IOException e) {
+      e.printStackTrace();
       Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), Alert.AlertType.ERROR);
     }
   }
 
   private void initEditButtons() {
     tableColumnEdit.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
-    tableColumnEdit.setCellFactory(param -> new TableCell<Department, Department>() {
+    tableColumnEdit.setCellFactory(param -> new TableCell<>() {
       private final Button buttonEdit = new Button("edit");
 
       @Override
@@ -139,7 +140,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 
   private void initRemoveButtons() {
     tableColumnRemove.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
-    tableColumnRemove.setCellFactory(param -> new TableCell<Department, Department>() {
+    tableColumnRemove.setCellFactory(param -> new TableCell<>() {
 
       private final Button buttonRemove = new Button("remove");
 

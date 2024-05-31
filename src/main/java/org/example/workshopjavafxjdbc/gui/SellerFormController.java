@@ -1,16 +1,21 @@
 package org.example.workshopjavafxjdbc.gui;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.util.Callback;
 import org.example.workshopjavafxjdbc.database.DataBaseException;
 import org.example.workshopjavafxjdbc.gui.listeners.DataChangeListener;
 import org.example.workshopjavafxjdbc.gui.util.Alerts;
 import org.example.workshopjavafxjdbc.gui.util.Constraints;
 import org.example.workshopjavafxjdbc.gui.util.Utils;
+import org.example.workshopjavafxjdbc.model.entities.Department;
 import org.example.workshopjavafxjdbc.model.entities.Seller;
 import org.example.workshopjavafxjdbc.model.exception.ValidationException;
+import org.example.workshopjavafxjdbc.model.services.DepartmentService;
 import org.example.workshopjavafxjdbc.model.services.SellerService;
 
 import java.net.URL;
@@ -31,6 +36,8 @@ public class SellerFormController implements Initializable {
   @FXML
   private TextField textFieldBaseSalary;
   @FXML
+  private ComboBox<Department> comboBoxDepartment;
+  @FXML
   private Label labelErrorName;
   @FXML
   private Label labelErrorEmail;
@@ -45,7 +52,9 @@ public class SellerFormController implements Initializable {
 
   private Seller seller;
   private SellerService sellerService;
+  private DepartmentService departmentService;
   private final List<DataChangeListener> dataChangeListenerList = new ArrayList<>();
+  private ObservableList<Department> departmentObservableList;
 
   @FXML
   public void onButtonSaveAction(ActionEvent event) {
@@ -80,14 +89,16 @@ public class SellerFormController implements Initializable {
     this.seller = seller;
   }
 
-  public void setSellerService(SellerService sellerService) {
+  public void setServices(SellerService sellerService, DepartmentService departmentService) {
     this.sellerService = sellerService;
+    this.departmentService = departmentService;
   }
 
   public void updateFormData() {
     if (seller == null) {
       throw new IllegalStateException("Seller is null");
     }
+
     Locale.setDefault(Locale.US);
 
     textFieldId.setText(String.valueOf(seller.getId()));
@@ -98,10 +109,27 @@ public class SellerFormController implements Initializable {
     if (seller.getBirthDate() != null) {
       datePickerBirthDate.setValue(LocalDate.ofInstant(seller.getBirthDate().toInstant(), ZoneId.systemDefault()));
     }
+
+    if (seller.getDepartment() == null) {
+      comboBoxDepartment.getSelectionModel().selectFirst();
+    } else {
+      comboBoxDepartment.setValue(seller.getDepartment());
+    }
   }
 
   public void subscribeDataChangeListener(DataChangeListener dataChangeListener) {
     dataChangeListenerList.add(dataChangeListener);
+  }
+
+  public void loadAssociatedObjects() {
+    if (departmentService == null) {
+      throw new IllegalStateException("Department service is null");
+    }
+
+    List<Department> departmentList = departmentService.findAll();
+
+    departmentObservableList = FXCollections.observableArrayList(departmentList);
+    comboBoxDepartment.setItems(departmentObservableList);
   }
 
   @Override
@@ -115,6 +143,8 @@ public class SellerFormController implements Initializable {
     Constraints.setTextFieldDouble(textFieldBaseSalary);
     Constraints.setTextFieldMaxLength(textFieldEmail, 60);
     Utils.formatDatePicker(datePickerBirthDate, "dd/MM/yyyy");
+
+    initializeComboBoxDepartment();
   }
 
   private Seller getFormData() {
@@ -148,5 +178,18 @@ public class SellerFormController implements Initializable {
     if (fields.contains("name")) {
       labelErrorName.setText(errorMessages.get("name"));
     }
+  }
+
+  private void initializeComboBoxDepartment() {
+    Callback<ListView<Department>, ListCell<Department>> factory = lv -> new ListCell<>() {
+      @Override
+      protected void updateItem(Department item, boolean empty) {
+        super.updateItem(item, empty);
+        setText(empty ? "" : item.getName());
+      }
+    };
+
+    comboBoxDepartment.setCellFactory(factory);
+    comboBoxDepartment.setButtonCell(factory.call(null));
   }
 }
