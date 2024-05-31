@@ -19,6 +19,7 @@ import org.example.workshopjavafxjdbc.model.services.DepartmentService;
 import org.example.workshopjavafxjdbc.model.services.SellerService;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -159,6 +160,27 @@ public class SellerFormController implements Initializable {
 
     seller.setName(textFieldName.getText());
 
+    if (textFieldEmail.getText() == null || textFieldEmail.getText().isEmpty()) {
+      validationException.addError("email", "Field email is required");
+    }
+
+    seller.setEmail(textFieldEmail.getText());
+
+    if (datePickerBirthDate.getValue() == null) {
+      validationException.addError("birthDate", "Field birthDate is required");
+    } else {
+      Instant instant = Instant.from(datePickerBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+      seller.setBirthDate(Date.from(instant));
+    }
+
+    if (textFieldBaseSalary.getText() == null || textFieldBaseSalary.getText().isEmpty()) {
+      validationException.addError("baseSalary", "Field baseSalary is required");
+    }
+
+    seller.setBaseSalary(Utils.tryParseToDouble(textFieldBaseSalary.getText()));
+
+    seller.setDepartment(comboBoxDepartment.getValue());
+
     if (!validationException.getErrors().isEmpty()) {
       throw validationException;
     }
@@ -175,9 +197,10 @@ public class SellerFormController implements Initializable {
   private void setErrorMessages(Map<String, String> errorMessages) {
     Set<String> fields = errorMessages.keySet();
 
-    if (fields.contains("name")) {
-      labelErrorName.setText(errorMessages.get("name"));
-    }
+    labelErrorName.setText((fields.contains("name") ? errorMessages.get("name") : ""));
+    labelErrorEmail.setText((fields.contains("email") ? errorMessages.get("email") : ""));
+    labelErrorBirthDate.setText((fields.contains("birthDate") ? errorMessages.get("birthDate") : ""));
+    labelErrorBaseSalary.setText((fields.contains("baseSalary") ? errorMessages.get("baseSalary") : ""));
   }
 
   private void initializeComboBoxDepartment() {
