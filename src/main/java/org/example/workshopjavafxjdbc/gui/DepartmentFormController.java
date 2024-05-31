@@ -37,6 +37,11 @@ public class DepartmentFormController implements Initializable {
   private final List<DataChangeListener> dataChangeListenerList = new ArrayList<>();
 
   @FXML
+  public void onButtonCancelAction(ActionEvent event) {
+    Utils.currentStage(event).close();
+  }
+
+  @FXML
   public void onButtonSaveAction(ActionEvent event) {
     if (department == null) {
       throw new IllegalArgumentException("Department is null");
@@ -60,9 +65,9 @@ public class DepartmentFormController implements Initializable {
     }
   }
 
-  @FXML
-  public void onButtonCancelAction(ActionEvent event) {
-    Utils.currentStage(event).close();
+  @Override
+  public void initialize(URL url, ResourceBundle resourceBundle) {
+    initializeNodes();
   }
 
   public void setDepartment(Department department) {
@@ -73,6 +78,10 @@ public class DepartmentFormController implements Initializable {
     this.departmentService = departmentService;
   }
 
+  public void subscribeDataChangeListener(DataChangeListener dataChangeListener) {
+    dataChangeListenerList.add(dataChangeListener);
+  }
+
   public void updateFormData() {
     if (department == null) {
       throw new IllegalStateException("Department is null");
@@ -80,20 +89,6 @@ public class DepartmentFormController implements Initializable {
 
     textFieldId.setText(String.valueOf(department.getId()));
     textFieldName.setText(department.getName());
-  }
-
-  public void subscribeDataChangeListener(DataChangeListener dataChangeListener) {
-    dataChangeListenerList.add(dataChangeListener);
-  }
-
-  @Override
-  public void initialize(URL url, ResourceBundle resourceBundle) {
-    initializeNodes();
-  }
-
-  private void initializeNodes() {
-    Constraints.setTextFieldInteger(textFieldId);
-    Constraints.setTextFieldMaxLength(textFieldName, 30);
   }
 
   private Department getFormData() {
@@ -113,6 +108,11 @@ public class DepartmentFormController implements Initializable {
     }
 
     return department;
+  }
+
+  private void initializeNodes() {
+    Constraints.setTextFieldInteger(textFieldId);
+    Constraints.setTextFieldMaxLength(textFieldName, 30);
   }
 
   private void notifyDataChangeListeners() {

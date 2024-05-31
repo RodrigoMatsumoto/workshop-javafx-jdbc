@@ -6,13 +6,11 @@ import java.util.List;
 
 public interface DepartmentDAO {
 
+  void deleteById(Integer id);
+
+  List<Department> findAll();
+
   void insert(Department department);
 
   void update(Department department);
-
-  void deleteById(Integer id);
-
-  Department findById(Integer id);
-
-  List<Department> findAll();
 }

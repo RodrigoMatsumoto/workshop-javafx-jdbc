@@ -14,15 +14,15 @@ public class DepartmentService {
     return departmentDAO.findAll();
   }
 
+  public void remove(Department department) {
+    departmentDAO.deleteById(department.getId());
+  }
+
   public void saveOrUpdate(Department department) {
     if (department.getId() == null) {
       departmentDAO.insert(department);
     } else {
       departmentDAO.update(department);
     }
-  }
-
-  public void remove(Department department) {
-    departmentDAO.deleteById(department.getId());
   }
 }

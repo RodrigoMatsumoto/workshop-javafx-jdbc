@@ -51,14 +51,23 @@ public class SellerListController implements Initializable, DataChangeListener {
   private Button buttonNew;
 
   private SellerService sellerService;
-  private ObservableList<Seller> observableSellerList;
 
   @FXML
   public void onButtonNewAction(ActionEvent event) {
     Stage parentStage = Utils.currentStage(event);
     Seller seller = new Seller();
 
-    createDialogForm(seller, "/org/example/workshopjavafxjdbc/gui/SellerFormView.fxml", parentStage);
+    createDialogForm(seller, parentStage);
+  }
+
+  @Override
+  public void initialize(URL url, ResourceBundle resourceBundle) {
+    initializeNodes();
+  }
+
+  @Override
+  public void onDataChanged() {
+    updateTableView();
   }
 
   public void setSellerService(SellerService sellerService) {
@@ -72,38 +81,16 @@ public class SellerListController implements Initializable, DataChangeListener {
 
     List<Seller> sellerList = sellerService.findAll();
 
-    observableSellerList = FXCollections.observableArrayList(sellerList);
+    ObservableList<Seller> observableSellerList = FXCollections.observableArrayList(sellerList);
     tableViewSeller.setItems(observableSellerList);
-    initEditButtons();
-    initRemoveButtons();
+    initializeEditButtons();
+    initializeRemoveButtons();
   }
 
-  @Override
-  public void initialize(URL url, ResourceBundle resourceBundle) {
-    initializeNodes();
-  }
-
-  @Override
-  public void onDataChanged() {
-    updateTableView();
-  }
-
-  private void initializeNodes() {
-    Stage stage = (Stage) Main.getMainScene().getWindow();
-    Utils.formatTableColumnDate(tableColumnBirthDate, "dd/MM/yyyy");
-    Utils.formatTableColumnDouble(tableColumnBaseSalary, 2);
-
-    tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
-    tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
-    tableColumnEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-    tableColumnBirthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
-    tableColumnBaseSalary.setCellValueFactory(new PropertyValueFactory<>("baseSalary"));
-    tableViewSeller.prefHeightProperty().bind(stage.heightProperty());
-  }
-
-  private void createDialogForm(Seller seller, String absoluteName, Stage parentStage) {
+  private void createDialogForm(Seller seller, Stage parentStage) {
     try {
-      FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(absoluteName));
+      FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+          "/org/example/workshopjavafxjdbc/gui/SellerFormView.fxml"));
       Pane pane = fxmlLoader.load();
       Stage dialogStage = new Stage();
       SellerFormController sellerFormController = fxmlLoader.getController();
@@ -121,12 +108,11 @@ public class SellerListController implements Initializable, DataChangeListener {
       dialogStage.initModality(Modality.WINDOW_MODAL);
       dialogStage.showAndWait();
     } catch (IOException e) {
-      e.printStackTrace();
       Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), Alert.AlertType.ERROR);
     }
   }
 
-  private void initEditButtons() {
+  private void initializeEditButtons() {
     tableColumnEdit.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
     tableColumnEdit.setCellFactory(param -> new TableCell<>() {
       private final Button buttonEdit = new Button("edit");
@@ -143,16 +129,29 @@ public class SellerListController implements Initializable, DataChangeListener {
         setGraphic(buttonEdit);
 
         buttonEdit.setOnAction(
-          event -> createDialogForm(
-            seller, "/org/example/workshopjavafxjdbc/gui/SellerFormView.fxml",
-              Utils.currentStage(event)
-          )
+            event -> createDialogForm(
+                seller,
+                Utils.currentStage(event)
+            )
         );
       }
     });
   }
 
-  private void initRemoveButtons() {
+  private void initializeNodes() {
+    Stage stage = (Stage) Main.getMainScene().getWindow();
+    Utils.formatTableColumnDate(tableColumnBirthDate, "dd/MM/yyyy");
+    Utils.formatTableColumnDouble(tableColumnBaseSalary, 2);
+
+    tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
+    tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
+    tableColumnEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+    tableColumnBirthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
+    tableColumnBaseSalary.setCellValueFactory(new PropertyValueFactory<>("baseSalary"));
+    tableViewSeller.prefHeightProperty().bind(stage.heightProperty());
+  }
+
+  private void initializeRemoveButtons() {
     tableColumnRemove.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
     tableColumnRemove.setCellFactory(param -> new TableCell<>() {
 
@@ -175,7 +174,7 @@ public class SellerListController implements Initializable, DataChangeListener {
   private void removeEntity(Seller seller) {
     Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Are you sure to delete?");
 
-    if (result.get() == ButtonType.OK) {
+    if (result.isPresent() && result.get() == ButtonType.OK) {
       if (sellerService == null) {
         throw new IllegalStateException("SellerService is null");
       }

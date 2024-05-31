@@ -14,15 +14,15 @@ public class SellerService {
     return sellerDAO.findAll();
   }
 
+  public void remove(Seller seller) {
+    sellerDAO.deleteById(seller.getId());
+  }
+
   public void saveOrUpdate(Seller seller) {
     if (seller.getId() == null) {
       sellerDAO.insert(seller);
     } else {
       sellerDAO.update(seller);
     }
-  }
-
-  public void remove(Seller seller) {
-    sellerDAO.deleteById(seller.getId());
   }
 }

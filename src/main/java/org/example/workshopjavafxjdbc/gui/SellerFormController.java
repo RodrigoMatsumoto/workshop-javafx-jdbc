@@ -55,7 +55,11 @@ public class SellerFormController implements Initializable {
   private SellerService sellerService;
   private DepartmentService departmentService;
   private final List<DataChangeListener> dataChangeListenerList = new ArrayList<>();
-  private ObservableList<Department> departmentObservableList;
+
+  @FXML
+  public void onButtonCancelAction(ActionEvent event) {
+    Utils.currentStage(event).close();
+  }
 
   @FXML
   public void onButtonSaveAction(ActionEvent event) {
@@ -81,9 +85,20 @@ public class SellerFormController implements Initializable {
     }
   }
 
-  @FXML
-  public void onButtonCancelAction(ActionEvent event) {
-    Utils.currentStage(event).close();
+  @Override
+  public void initialize(URL url, ResourceBundle resourceBundle) {
+    initializeNodes();
+  }
+
+  public void loadAssociatedObjects() {
+    if (departmentService == null) {
+      throw new IllegalStateException("Department service is null");
+    }
+
+    List<Department> departmentList = departmentService.findAll();
+
+    ObservableList<Department> departmentObservableList = FXCollections.observableArrayList(departmentList);
+    comboBoxDepartment.setItems(departmentObservableList);
   }
 
   public void setSeller(Seller seller) {
@@ -93,6 +108,10 @@ public class SellerFormController implements Initializable {
   public void setServices(SellerService sellerService, DepartmentService departmentService) {
     this.sellerService = sellerService;
     this.departmentService = departmentService;
+  }
+
+  public void subscribeDataChangeListener(DataChangeListener dataChangeListener) {
+    dataChangeListenerList.add(dataChangeListener);
   }
 
   public void updateFormData() {
@@ -116,36 +135,6 @@ public class SellerFormController implements Initializable {
     } else {
       comboBoxDepartment.setValue(seller.getDepartment());
     }
-  }
-
-  public void subscribeDataChangeListener(DataChangeListener dataChangeListener) {
-    dataChangeListenerList.add(dataChangeListener);
-  }
-
-  public void loadAssociatedObjects() {
-    if (departmentService == null) {
-      throw new IllegalStateException("Department service is null");
-    }
-
-    List<Department> departmentList = departmentService.findAll();
-
-    departmentObservableList = FXCollections.observableArrayList(departmentList);
-    comboBoxDepartment.setItems(departmentObservableList);
-  }
-
-  @Override
-  public void initialize(URL url, ResourceBundle resourceBundle) {
-    initializeNodes();
-  }
-
-  private void initializeNodes() {
-    Constraints.setTextFieldInteger(textFieldId);
-    Constraints.setTextFieldMaxLength(textFieldName, 70);
-    Constraints.setTextFieldDouble(textFieldBaseSalary);
-    Constraints.setTextFieldMaxLength(textFieldEmail, 60);
-    Utils.formatDatePicker(datePickerBirthDate, "dd/MM/yyyy");
-
-    initializeComboBoxDepartment();
   }
 
   private Seller getFormData() {
@@ -188,6 +177,29 @@ public class SellerFormController implements Initializable {
     return seller;
   }
 
+  private void initializeComboBoxDepartment() {
+    Callback<ListView<Department>, ListCell<Department>> factory = lv -> new ListCell<>() {
+      @Override
+      protected void updateItem(Department item, boolean empty) {
+        super.updateItem(item, empty);
+        setText(empty ? "" : item.getName());
+      }
+    };
+
+    comboBoxDepartment.setCellFactory(factory);
+    comboBoxDepartment.setButtonCell(factory.call(null));
+  }
+
+  private void initializeNodes() {
+    Constraints.setTextFieldInteger(textFieldId);
+    Constraints.setTextFieldMaxLength(textFieldName, 70);
+    Constraints.setTextFieldDouble(textFieldBaseSalary);
+    Constraints.setTextFieldMaxLength(textFieldEmail, 60);
+    Utils.formatDatePicker(datePickerBirthDate, "dd/MM/yyyy");
+
+    initializeComboBoxDepartment();
+  }
+
   private void notifyDataChangeListeners() {
     for (DataChangeListener dataChangeListener : dataChangeListenerList) {
       dataChangeListener.onDataChanged();
@@ -201,18 +213,5 @@ public class SellerFormController implements Initializable {
     labelErrorEmail.setText((fields.contains("email") ? errorMessages.get("email") : ""));
     labelErrorBirthDate.setText((fields.contains("birthDate") ? errorMessages.get("birthDate") : ""));
     labelErrorBaseSalary.setText((fields.contains("baseSalary") ? errorMessages.get("baseSalary") : ""));
-  }
-
-  private void initializeComboBoxDepartment() {
-    Callback<ListView<Department>, ListCell<Department>> factory = lv -> new ListCell<>() {
-      @Override
-      protected void updateItem(Department item, boolean empty) {
-        super.updateItem(item, empty);
-        setText(empty ? "" : item.getName());
-      }
-    };
-
-    comboBoxDepartment.setCellFactory(factory);
-    comboBoxDepartment.setButtonCell(factory.call(null));
   }
 }

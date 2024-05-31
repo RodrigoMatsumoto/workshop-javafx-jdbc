@@ -29,6 +29,20 @@ public class MainViewController implements Initializable {
   private MenuItem menuItemAbout;
 
   @FXML
+  public void onMenuItemAboutAction() {
+    loadView("/org/example/workshopjavafxjdbc/gui/AboutView.fxml", x -> {});
+  }
+
+  @FXML
+  public void onMenuItemDepartmentAction() {
+    loadView("/org/example/workshopjavafxjdbc/gui/DepartmentListView.fxml",
+        (DepartmentListController departmentListController) -> {
+          departmentListController.setDepartmentService(new DepartmentService());
+          departmentListController.updateTableView();
+        });
+  }
+
+  @FXML
   public void onMenuItemSellerAction() {
     loadView("/org/example/workshopjavafxjdbc/gui/SellerListView.fxml",
         (SellerListController sellerListController) -> {
@@ -37,18 +51,8 @@ public class MainViewController implements Initializable {
         });
   }
 
-  @FXML
-  public void onMenuItemDepartmentAction() {
-    loadView("/org/example/workshopjavafxjdbc/gui/DepartmentListView.fxml",
-        (DepartmentListController departmentListController) -> {
-      departmentListController.setDepartmentService(new DepartmentService());
-      departmentListController.updateTableView();
-    });
-  }
-
-  @FXML
-  public void onMenuItemAboutAction() {
-    loadView("/org/example/workshopjavafxjdbc/gui/AboutView.fxml", x -> {});
+  @Override
+  public void initialize(URL url, ResourceBundle resourceBundle) {
   }
 
   private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) {
@@ -67,9 +71,5 @@ public class MainViewController implements Initializable {
     } catch (IOException e) {
       Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), Alert.AlertType.ERROR);
     }
-  }
-
-  @Override
-  public void initialize(URL url, ResourceBundle resourceBundle) {
   }
 }

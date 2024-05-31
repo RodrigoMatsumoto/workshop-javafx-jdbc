@@ -12,8 +12,33 @@ public class DepartmentDAOJDBC implements DepartmentDAO {
 
   private final Connection connection;
 
-  public DepartmentDAOJDBC(Connection connection) {
-    this.connection = connection;
+  @Override
+  public void deleteById(Integer id) {
+    try(PreparedStatement preparedStatement = connection.prepareStatement(
+        "DELETE FROM department WHERE Id = ?")
+    ) {
+      preparedStatement.setInt(1, id);
+      preparedStatement.executeUpdate();
+    } catch (SQLException e) {
+      throw new DataBaseException(e.getMessage());
+    }
+  }
+
+  @Override
+  public List<Department> findAll() {
+    try (PreparedStatement preparedStatement = connection.prepareStatement(
+        "SELECT * FROM department ORDER BY Name");
+         ResultSet resultSet = preparedStatement.executeQuery()
+    ) {
+      List<Department> departmentList = new ArrayList<>();
+
+      while (resultSet.next()) {
+        departmentList.add(extractDepartmentFromResultSet(resultSet));
+      }
+      return departmentList;
+    } catch (SQLException e) {
+      throw new DataBaseException(e.getMessage());
+    }
   }
 
   @Override
@@ -23,7 +48,7 @@ public class DepartmentDAOJDBC implements DepartmentDAO {
               "(Name) " +
               "VALUES " +
               "(?)",
-          Statement.RETURN_GENERATED_KEYS);
+          Statement.RETURN_GENERATED_KEYS)
     ) {
       preparedStatement.setString(1, department.getName());
 
@@ -48,7 +73,7 @@ public class DepartmentDAOJDBC implements DepartmentDAO {
     try (PreparedStatement preparedStatement = connection.prepareStatement(
           "UPDATE department " +
               "SET Name = ? " +
-              "WHERE Id = ?");
+              "WHERE Id = ?")
     ) {
       preparedStatement.setString(1, department.getName());
       preparedStatement.setInt(2, department.getId());
@@ -58,51 +83,8 @@ public class DepartmentDAOJDBC implements DepartmentDAO {
     }
   }
 
-  @Override
-  public void deleteById(Integer id) {
-    try(PreparedStatement preparedStatement = connection.prepareStatement(
-        "DELETE FROM department WHERE Id = ?");
-    ) {
-      preparedStatement.setInt(1, id);
-      preparedStatement.executeUpdate();
-    } catch (SQLException e) {
-      throw new DataBaseException(e.getMessage());
-    }
-  }
-
-  @Override
-  public Department findById(Integer id) {
-    try (PreparedStatement preparedStatement = connection.prepareStatement(
-        "SELECT * FROM department WHERE Id = ?");
-    ) {
-      preparedStatement.setInt(1, id);
-
-      try (ResultSet resultSet = preparedStatement.executeQuery();) {
-        if (resultSet.next()) {
-          return extractDepartmentFromResultSet(resultSet);
-        }
-        return null;
-      }
-    } catch (SQLException e) {
-      throw new DataBaseException(e.getMessage());
-    }
-  }
-
-  @Override
-  public List<Department> findAll() {
-    try (PreparedStatement preparedStatement = connection.prepareStatement(
-      "SELECT * FROM department ORDER BY Name");
-         ResultSet resultSet = preparedStatement.executeQuery();
-    ) {
-      List<Department> departmentList = new ArrayList<>();
-
-      while (resultSet.next()) {
-        departmentList.add(extractDepartmentFromResultSet(resultSet));
-      }
-      return departmentList;
-    } catch (SQLException e) {
-      throw new DataBaseException(e.getMessage());
-    }
+  public DepartmentDAOJDBC(Connection connection) {
+    this.connection = connection;
   }
 
   private static Department extractDepartmentFromResultSet(ResultSet resultSet) throws SQLException {

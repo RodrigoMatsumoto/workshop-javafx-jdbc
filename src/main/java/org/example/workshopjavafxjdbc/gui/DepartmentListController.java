@@ -43,14 +43,23 @@ public class DepartmentListController implements Initializable, DataChangeListen
   private Button buttonNew;
 
   private DepartmentService departmentService;
-  private ObservableList<Department> observableDepartmentList;
 
   @FXML
   public void onButtonNewAction(ActionEvent event) {
     Stage parentStage = Utils.currentStage(event);
     Department department = new Department();
 
-    createDialogForm(department, "/org/example/workshopjavafxjdbc/gui/DepartmentFormView.fxml", parentStage);
+    createDialogForm(department, parentStage);
+  }
+
+  @Override
+  public void initialize(URL url, ResourceBundle resourceBundle) {
+    initializeNodes();
+  }
+
+  @Override
+  public void onDataChanged() {
+    updateTableView();
   }
 
   public void setDepartmentService(DepartmentService departmentService) {
@@ -64,33 +73,16 @@ public class DepartmentListController implements Initializable, DataChangeListen
 
     List<Department> departmentList = departmentService.findAll();
 
-    observableDepartmentList = FXCollections.observableArrayList(departmentList);
+    ObservableList<Department> observableDepartmentList = FXCollections.observableArrayList(departmentList);
     tableViewDepartment.setItems(observableDepartmentList);
-    initEditButtons();
-    initRemoveButtons();
+    initializeEditButtons();
+    initializeRemoveButtons();
   }
 
-  @Override
-  public void initialize(URL url, ResourceBundle resourceBundle) {
-    initializeNodes();
-  }
-
-  @Override
-  public void onDataChanged() {
-    updateTableView();
-  }
-
-  private void initializeNodes() {
-    Stage stage = (Stage) Main.getMainScene().getWindow();
-
-    tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
-    tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
-    tableViewDepartment.prefHeightProperty().bind(stage.heightProperty());
-  }
-
-  private void createDialogForm(Department department, String absoluteName, Stage parentStage) {
+  private void createDialogForm(Department department, Stage parentStage) {
     try {
-      FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(absoluteName));
+      FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+          "/org/example/workshopjavafxjdbc/gui/DepartmentFormView.fxml"));
       Pane pane = fxmlLoader.load();
       Stage dialogStage = new Stage();
       DepartmentFormController departmentFormController = fxmlLoader.getController();
@@ -107,12 +99,11 @@ public class DepartmentListController implements Initializable, DataChangeListen
       dialogStage.initModality(Modality.WINDOW_MODAL);
       dialogStage.showAndWait();
     } catch (IOException e) {
-      e.printStackTrace();
       Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), Alert.AlertType.ERROR);
     }
   }
 
-  private void initEditButtons() {
+  private void initializeEditButtons() {
     tableColumnEdit.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
     tableColumnEdit.setCellFactory(param -> new TableCell<>() {
       private final Button buttonEdit = new Button("edit");
@@ -129,16 +120,24 @@ public class DepartmentListController implements Initializable, DataChangeListen
         setGraphic(buttonEdit);
 
         buttonEdit.setOnAction(
-          event -> createDialogForm(
-            department, "/org/example/workshopjavafxjdbc/gui/DepartmentFormView.fxml",
-              Utils.currentStage(event)
-          )
+            event -> createDialogForm(
+                department,
+                Utils.currentStage(event)
+            )
         );
       }
     });
   }
 
-  private void initRemoveButtons() {
+  private void initializeNodes() {
+    Stage stage = (Stage) Main.getMainScene().getWindow();
+
+    tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
+    tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
+    tableViewDepartment.prefHeightProperty().bind(stage.heightProperty());
+  }
+
+  private void initializeRemoveButtons() {
     tableColumnRemove.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
     tableColumnRemove.setCellFactory(param -> new TableCell<>() {
 
@@ -161,7 +160,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
   private void removeEntity(Department department) {
     Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Are you sure to delete?");
 
-    if (result.get() == ButtonType.OK) {
+    if (result.isPresent() && result.get() == ButtonType.OK) {
       if (departmentService == null) {
         throw new IllegalStateException("DepartmentService is null");
       }
